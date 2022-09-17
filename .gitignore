@@ -1,0 +1,5 @@
+*.vscode/
+*.py[c]
+*.wmv
+*venv/
+*.venv/
