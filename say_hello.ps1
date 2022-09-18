@@ -1,2 +1,4 @@
 py -0
-py -c "import sys; print(f'Hello from Python:  {sys.version}')"
+$Hello = $(py -c "import sys; print(f'Hello from Python:  {sys.version}')")
+py -c "import sys; print(f'{sys.exec_prefix}')"
+return $Hello

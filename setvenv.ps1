@@ -1,3 +1,12 @@
+param(
+    # Script to execute
+    [string]$Script,
+    [string]$PythonVersion = "3",
+    [string]$EnvDir = ".venv",
+    [bool]$getpyhonpath = $false
+)
+
+
 class Venv {
     [string]$PythonVersion
     [string]$EnvDir
@@ -13,8 +22,8 @@ class Venv {
     [string]Create() {
         Write-Host "Creating virtual environment in $($this.EnvDir)"
         $cmd = "py -$($this.PythonVersion) -m venv $($this.EnvDir)"
-        Invoke-Expression $cmd
-        $path = Resolve-Path $this.EnvDir
+        Invoke-Expression $cmd 
+        $path = Resolve-Path $this.EnvDir -ErrorAction Stop
         return $path
     }
 
@@ -36,6 +45,20 @@ class Venv {
         }
     }
 
+    [void] RunScript($Script) {
+        $ScriptPath = Resolve-Path $Script -ErrorAction Stop
+        $this.Activate()
+        Invoke-Expression $ScriptPath
+        $this.Deactivate()
+    }
+
+    [string] GetPythonExe() {
+        $this.Activate()
+        $PythonPath = $(py -c "import sys; print(f'{sys.exec_prefix}')") + "\Scripts\python.exe"
+        $this.Deactivate()
+        return $PythonPath
+    }
+    
     [void]Remove() {
         $this.Deactivate()
         Write-Host "Removing virtual environment in $($this.EnvAbsPath)"
@@ -44,16 +67,20 @@ class Venv {
 }
 
 
-# }
-
-$EnvDir = ".venv"
-$PythonVersion = "3.8"
-$Script = ".\say_hello.ps1"
 
 
-
+# $ScriptPath = Resolve-Path $Script
 [Venv]$MyVenv = [Venv]::new($PythonVersion, $EnvDir)
-$MyVenv.Activate()
-Invoke-Expression $Script
-Start-Sleep(2)
-$MyVenv.Remove()
+
+
+if ($Script) {
+    $MyVenv.RunScript($Script)
+}
+if ($getpyhonpath) {
+    return $MyVenv.GetPythonExe()
+}
+# $MyVenv.Activate()
+# Invoke-Expression $ScriptPath
+# Start-Sleep(2)
+# $this.Deactivate()
+# $MyVenv.Remove()
