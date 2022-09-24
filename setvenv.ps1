@@ -21,6 +21,12 @@ class Venv {
     }
 
     [string]Create() {
+        $path = Resolve-Path "$($this.EnvDir)\Scripts\Activate.ps1"
+        if ($path -is [System.Management.Automation.PathInfo]) {
+            $path = Resolve-Path $this.EnvDir -ErrorAction Stop
+            Write-Host "Virtualenv already exists, Using existing virtualenv"
+            return $path
+        }
         Write-Host "Creating virtual environment in $($this.EnvDir)"
         $cmd = "py -$($this.PythonVersion) -m venv $($this.EnvDir)"
         Invoke-Expression $cmd 
