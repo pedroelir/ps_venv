@@ -3,7 +3,8 @@ param(
     [string]$Script,
     [string]$PythonVersion = "3",
     [string]$EnvDir = ".venv",
-    [bool]$getpyhonpath = $false
+    [bool]$getpyhonpath = $false,
+    [bool]$getpippath = $false
 )
 
 
@@ -48,13 +49,20 @@ class Venv {
     [void] RunScript($Script) {
         $ScriptPath = Resolve-Path $Script -ErrorAction Stop
         $this.Activate()
-        Invoke-Expression $ScriptPath
+        Write-Host $(Invoke-Expression $ScriptPath)
         $this.Deactivate()
     }
 
     [string] GetPythonExe() {
         $this.Activate()
-        $PythonPath = $(py -c "import sys; print(f'{sys.exec_prefix}')") + "\Scripts\python.exe"
+        $PythonPath = $(Get-Command python).Source
+        $this.Deactivate()
+        return $PythonPath
+    }
+
+    [string] GetPipExe() {
+        $this.Activate()
+        $PythonPath = $(Get-Command pip).Source
         $this.Deactivate()
         return $PythonPath
     }
@@ -78,6 +86,10 @@ if ($Script) {
 }
 if ($getpyhonpath) {
     return $MyVenv.GetPythonExe()
+}
+
+if ($getpippath) {
+    return $MyVenv.GetPipExe()
 }
 # $MyVenv.Activate()
 # Invoke-Expression $ScriptPath
